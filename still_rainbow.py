@@ -1,22 +1,17 @@
-# Python for S60 script
 # coding=utf-8
 # Copyright (C) 2009-2010 Serhiy Zagoriya (Сергій Загорія) (int_ua)
 # Licence: GPLv3 http://www.gnu.org/licences/gpl-3.0.html
-# project is too small to attach full licence text at the moment.
-
+# project is too small to attach full licence text at the moment
 __name__='Still Rainbow S60 ' # :)
-__version__='0.94'
+__version__='0.95'
 __author__='Serhiy Zagoriya (int_ua)'
 __copyright__ = "Copyright 2009-2010, Serhiy Zagoriya"
 __license__ = "GPLv3"
 __email__ = "xintx.ua@gmail.com"
 __status__ = "experimental"
-
-# future release: full i18n, scenario creation fixes, scenario linking to other scenario,
-
+# future release: i18n, scenario linking to other scenario
 # img.open(file) instructions on start?
 # appuifw.app.full_name()
-# doubtful about: pause, velocity in ms
 
 import appuifw,e32,sysinfo,os
 from graphics import Image
@@ -29,30 +24,31 @@ velocity=10
 custom_accuracy=24
 showing_info=1
 running=0
-font_height=9
-info_width=font_height+1
+paused=0
 color_channel=0
 to_white=0
+font_height=9
+info_width=font_height+1
 
 map={
 'down': 'channel_plus',
 'up': 'channel_minus',
 'right': 'channel_right',
 'left': 'channel_left',
-'3': 'set_accuracy',
 'ok': 'direct_input',
+'1': 'draw',
+'4': 'draw2',
+'7': 'draw3',
+'2': 'draw_scenario',
+'5': 'write_scenario',
+'8': 'toggle_info',
+'3': 'set_accuracy',
+'6': 'velocity_inc',
+'9': 'velocity_dec',
+'0': 'pause',
 '*': 'white',
 '#': 'black',
-'0': 'draw',
-'9': 'draw2',
-'8': 'draw3',
-'7': 'draw3_white',
-'2': 'velocity_up',
-'5': 'velocity_down',
-'1': 'toggle_info',
-'4': 'info_width_input',
-'6': 'draw_scenario',
-'pen': 'font_input',
+'pen': 'draw3_white',
 'green': 'do_nothing',
 'menu': 'do_nothing',
 'camera': 'do_nothing',
@@ -82,12 +78,12 @@ def black():
  color=[0,0,0]
  rect(color)
 
-def velocity_up():
+def velocity_inc():
  global velocity
  velocity+=(velocity/abs(velocity))
  rect(color)
 
-def velocity_down():
+def velocity_dec():
  global velocity
  if abs(velocity)>1: velocity-=(velocity/abs(velocity))
  rect(color)
@@ -157,7 +153,7 @@ def screen_resize():
  global screen_height,color_height,screen_height_coef
 # screen_width=sysinfo.display_pixels()[0]
  screen_height=sysinfo.display_pixels()[1]
-#screen_height=128+font_height*6 # compact info mode
+# screen_height=128+font_height*6 # compact info mode
  left=screen_height-font_height*6
  screen_height_coef=(left/256.0,divmod(left,256)[0])[left>256]
  color_height=int(256*screen_height_coef)
@@ -182,20 +178,20 @@ def rect(col=color):
   img.rectangle((0,0,info_width*3,screen_height),fill=(0,0,0))
   for i in range(3):
    col_hex=hex(col[i]).split('x')[1]
-   col_hex+='0'*(2-len(col_hex))
+   col_hex='0'*(2-len(col_hex))+col_hex
    fill_untupled=[0,0,0]
    fill_untupled[i]=255
    fill=tuple(fill_untupled)
 # graphic channels
-   img.rectangle((info_width*i,screen_height-color_height+1,(i+1)*info_width,1+screen_height-color_height+int(col[i]*screen_height_coef)),fill=fill) #or s/=fill// to fill black
+   img.rectangle((info_width*i,screen_height-color_height+1,(i+1)*info_width,1+screen_height-color_height+int(col[i]*screen_height_coef)),fill=fill)
 # int rgb
    img.text((0,(i+1)*font_height),t(str(col[i])),fill,(None,font_height))
 # hex rgb
    img.text((i*(font_height+1),4*font_height),t(col_hex),fill,(None,font_height))
 # custom accuracy
   img.text((0,5*font_height),t(str(custom_accuracy)),0xffffff,(None,font_height))
-# velocity
-  img.text((0,6*font_height),t(str(abs(velocity))),0xface0D,(None,font_height))
+# velocity (+pause,wait)
+  img.text((0,6*font_height),t(str(abs(velocity))+str((u'',u'p')[paused])+str((u'',u'w'+str(wait))[wait>0])),0xface0D,(None,font_height))
 # white color channel marker
   img.rectangle((color_channel*info_width,screen_height-color_height,color_channel*info_width+info_width,screen_height-color_height+1),fill=0xffffff)
  canvas.blit(img)
@@ -204,17 +200,26 @@ def limit(col,gap=(0,255)):
  return (gap[0],(col,gap[1])[col>gap[1]])[col>gap[0]]
 
 def draw():
-#initial idea, cycles all bright colors smoothly
+# initial idea, cycles all bright colors smoothly
  global velocity,running;
  running=not(running)
- while running:
-  for i in range(3):
-   while color[i] != ( 255*(1+(velocity/abs(velocity)))/2 ):
+ while running: #
+  for i in range(3): #
+   while color[i] != ( 255*(1+(velocity/abs(velocity)))/2 ): #
     e32.ao_yield()
-    color[i]=limit(color[i]+velocity)
     if running==0: return
-    rect(color)
-   velocity=-velocity
+    color[i]=limit(color[i]+velocity) #
+    rect(color) #
+    while paused:
+     e32.ao_sleep(0.1)
+     e32.ao_yield()
+     if running==0: return
+   velocity=-velocity #
+
+def pause():
+ global paused
+ paused=not(paused)
+ rect(color)
 
 def draw2():
 # bright colors + white
@@ -228,6 +233,10 @@ def draw2():
      e32.ao_yield()
      if running==0: return
      rect(color)
+     while paused:
+      e32.ao_sleep(0.1)
+      e32.ao_yield()
+      if running==0: return
     velocity=-velocity
     if o==2:
      velocity=abs(velocity)
@@ -243,66 +252,63 @@ def draw3():
     e32.ao_yield()
     if running==0: return
     rect(color)
+    while paused:
+     e32.ao_sleep(0.1)
+     e32.ao_yield()
+     if running==0: return
    if color==[255,255,255]: to_white=0
    velocity=-velocity
    if to_white==1:
     velocity=abs(velocity)
 
 # 2.0 begin
-# mess with no optimization
 
-scenario_path=u'e:\\Python\\scenario.csv'
-def input_scenario(new=0):
- global scenario_path
- scenario_path=appuifw.query(u'file with scenario:','text',scenario_path)
- if scenario_path==None: return 0
- if new: return 1
+def input_scenario(default):
+ return str(appuifw.query(u'file with scenario:','text',default))
+
+def check(filepath,mode='r'):
+ if not(filepath) or filepath=='None': return -1 #cancel
  try:
-  file=open(scenario_path,'r')
+  file=open(filepath,mode)
   file.close()
   return 1
  except:
-  appuifw.note(u'error opening file:'+str(scenario_path))
-  return input_scenario()
+  appuifw.note(u'error opening file:'+str(filepath)+u' in '+{'r':'read','a':'append','w':'write'}[mode]+u' mode')
+  return 0
+
+wait=0
 
 def draw_scenario():
- global running,i,color,scenario_path
+ global running,color,wait
  target=[0,0,0]
  v=[0,0,0] #velocities
- if not(input_scenario()): return 0
-
+#input
+ scenario_path=input_scenario(u'e:\\Python\\scenario_read.csv')
+ if check(scenario_path)<1: return
+#read
  file=open(scenario_path,'r')
- line=str(file.readline()).split(',')
- line_counter=1
- try:
-  for k in range(3):
-   color[k]=int(line[k])
-  rect(color)
- except:
-  appuifw.note(u'Wrong file or error on first line of '+str(scenario_path)); file.close(); return 0
-
+ line_counter=0
  running=1
  while running:
+  line="None"
   if line == "": running=0
-  line=file.readline()
   while line != "":
+   line=file.readline()
    line_counter+=1
+   if line=="":
+    file.close()
+    appuifw.note(u'scenario '+str(scenario_path)+u' finished')
+    return
+   if line[0]=="#" or len(line)<13: break
    try:
     line=str(line).split(',')
     for i in range(3):
-     v[i]=int(line[i])
-     target[i]=int(line[i+3])
+     target[i]=limit(int(line[i+3]))
+     v[i]=abs((velocity,int(line[i]))[int(line[i])!=0])*cmp(target[i],color[i])
+    wait=abs(float(line[6]))
    except:
-    appuifw.note(u'Format error on line '+str(line_counter)+u' of '+str(scenario_path)); file.close(); return 0
-   for i in range(3):
-    target_check=limit(target[i])
-    if target[i]!=target_check:
-     if appuifw.query(u'Fix target #'+str(i+1)+u' from '+str(target[i])+u' to '+str(target_check)+u' Line:'+str(line_counter)+u'\nTarget:'+str(target),'query'): target[i]=target_check
-     else: file.close(); return 0
-    v_check=abs(v[i])*cmp(target[i],color[i])
-    if v[i]!=v_check:
-     if appuifw.query(u'Fix velocity #'+str(i+1)+u' from '+str(v[i])+u' to '+str(v_check)+u' Line:'+str(line_counter)+u'\nColor:'+str(color)+u'\nvelocity:'+str(v)+u'\nTarget:'+str(target),'query'): v[i]=v_check
-     else: file.close(); return 0
+    break
+#draw
    while color != target:
     for i in range(3):
      gap=((color[i],target[i]),(target[i],color[i]))[color[i]>target[i]]
@@ -310,39 +316,41 @@ def draw_scenario():
      e32.ao_yield()
      if running==0: file.close(); return
     rect(color)
-   line=file.readline()
- file.close()
- appuifw.note(u'scenario '+str(scenario_path)+u' finished')
+#pause
+    while paused:
+     e32.ao_sleep(0.1)
+     e32.ao_yield()
+     if running==0: file.close(); return
+#wait
+   while wait>0:
+    e32.ao_sleep(0.1)
+    wait=round(wait-0.1,1)
+    if wait<=0: wait=0
+    rect(color)
+    e32.ao_yield()
+    if running==0: return
 
-# scenario creation is experimental!
-scenario=None
+scenario_to_write=None
 
-def create_scenario():
-# create file and write initial color
- global scenario_path,scenario
- scenario_path=u'e:\\Python\\scenario1.csv'
- input_scenario(1)
- if os.path.isfile(scenario_path): return 1
- else:
-  scenario=open(scenario_path,'a')
-  scenario.write(str(color[0])+','+str(color[1])+','+str(color[2])+',generated in '+__name__+__version__)
-  scenario.close()
+def new_scenario():
+ global scenario_to_write
+ scenario_to_write=input_scenario(u'e:\\Python\\scenario_write.csv')
 
 def write_scenario():
-# add current color as next line
- global scenario
- if not(scenario): create_scenario()
- try:
-  scenario=open(scenario_path,'a')
- except:
-  appuifw.note(u'error writing to '+scenario_path)
- write_v=write_c=u''
+ if not(scenario_to_write):
+  new_scenario()
+ else:
+  (do_nothing,new_scenario)[appuifw.selection_list([str(scenario_to_write)+u'',u'other scenario'])]()
+ if check(scenario_to_write,'a')<1: return 0
+ file=open(scenario_to_write,'a')
+ line=u'\r\n'
  for i in range(3):
-  write_v+=str(limit(appuifw.query(u'velocity #'+str(i),'number',velocity)))+u','
-  write_c+=str(color[i])+u','
- write=u'\n'+write_v+write_c
- scenario.write(write)
- scenario.close()
+  line+=str(limit(appuifw.query(u'velocity #'+str(i),'number',velocity)))+u','
+ for i in range(3):
+  line+=str(color[i])+u','
+ line+=str(round(float(appuifw.query(u'wait (seconds):','float')),1))
+ file.write(line)
+ file.close()
 
 # 2.0 end
 
@@ -363,17 +371,17 @@ def unhelp():
 
 def help_u():
  global instruction
- instruction=__name__+__version__+'\n\nПрограма для \"малювання світлом\" (вночі за допомогою фотоапарату з контролем витримки)\nале може також стати у нагоді для відображення будь-якого кольору як у шістнадцяткових (hex), так і у десяткових значеннях RGB\n\nЛiцензiя: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Сергiй Загорiя (int_ua) 2009-2010\n( xintx.ua@gmail.com )\n\n\nЯкщо Ви оцiнили моi старання, Ви можете\nпiдтримати мене повiдомленням\nабо (хоча б) грошима:\nPayPal(^) або Webmoney:\nU215842819919\nZ327603499116\nE243558295191\n:)'
+ instruction=__name__+__version__+'\n\nПрограма для кольорового \"малювання світлом\" (вночі за допомогою фотоапарата з контролем витримки)\nале може також стати у нагоді для відображення чи вибору будь-якого кольору як у шістнадцяткових (hex), так і в десяткових значеннях RGB\nАбо для гіпнотизування друзів ;)\n\nЛiцензiя: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Сергiй Загорiя (int_ua) 2009-2010\n( xintx.ua@gmail.com )\n\n\nЯкщо Ви оцiнили мої старання, Ви можете пiдтримати мене повiдомленням або (хоча б) грошима:\nPayPal(^) або Webmoney:\nU215842819919\nZ327603499116\nE243558295191\n:)'
  help()
 
 def help_r():
  global instruction
- instruction=__name__+__version__+'\nЛицензия: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Сергей Загория (int_ua) 2009-2010\n( xintx.ua@gmail.com )\n\n\nЕсли Вы оценили мои старания, Вы можете\nподдержать меня сообщением\nили (хотя бы) деньгами:\nPayPal(^) или Webmoney:\nR309038080035\nZ327603499116\nE243558295191\n:)'
+ instruction=__name__+__version__+'\n\nПрограмма для цветного \"рисования светом\" (ночью при помощи фотоаппарата с контролем выдержки)\nно может также пригодиться для отображения или выбора любого цвета как в шестнадцатеричных (hex), так и в десятичных значениях RGB\nИли для гипнотизирования друзей ;)\n\nЛицензия: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Сергей Загория (int_ua) 2009-2010\n( xintx.ua@gmail.com )\n\n\nЕсли Вы оценили мои старания, Вы можете поддержать меня сообщением или (хотя бы) деньгами:\nPayPal(^) или Webmoney:\nR309038080035\nZ327603499116\nE243558295191\n:)'
  help()
 
 def help_e():
  global instruction
- instruction=__name__+__version__+'\nLicence: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Serhiy Zagoriya aka int_ua 2009-2010\n( xintx.ua@gmail.com )\n\n\nIf you appreciate my efforts, you can support\nme by emailing or (at least) donating:\nPayPal(^) or Webmoney:\nZ327603499116\nE243558295191\n:)'
+ instruction=__name__+__version__+'\n\nProgram is designed for making colorful \"light painting\" with your smartphone and some camera.\nBut it can be used also for easy viewing and selecting colors with their hex or integer values.\nOr for hypnotizing your friends ;)\n\nLicence: GPLv3\nhttp://www.gnu.org/licences/gpl-3.0.html\n\n(c) Serhiy Zagoriya aka int_ua 2009-2010\n( xintx.ua@gmail.com )\n\n\nIf you appreciate my efforts, you can support me by emailing or (at least) donating:\nPayPal(^) or Webmoney:\nZ327603499116\nE243558295191\n:)'
  help()
 
 def raw_hotkeys():
@@ -401,6 +409,7 @@ def exit():
 menu=[
  (u'draw',(
   (u'bright'+' ('+hotkeys['draw']+')',draw),
+  (u'  (un)pause'+' ('+hotkeys['pause']+')',pause),
   (u'bright+white'+' ('+hotkeys['draw2']+')',draw2),
   (u'bright+white on click'+' ('+hotkeys['draw3']+')',draw3),
   (u'white click'+' ('+hotkeys['draw3_white']+')',draw3_white),
@@ -408,8 +417,7 @@ menu=[
   (u'white'+' ('+hotkeys['white']+')',white))),
  (u'scenario',(
   (u'draw scenario'+' ('+hotkeys['draw_scenario']+')',draw_scenario),
-  (u'add current color',write_scenario),
-  (u'create another',create_scenario))),
+  (u'write current color',write_scenario))),
  (u'set',(
   (u'color'+' ('+hotkeys['direct_input']+')',direct_input),
   (u'   in hex',input_hex),
@@ -418,9 +426,9 @@ menu=[
   (u'joystick accuracy'+' ('+hotkeys['set_accuracy']+')',set_accuracy),
   (u'info visibitity'+' ('+hotkeys['toggle_info']+')',toggle_info),
   (u'font height',font_input),
-  (u'info width'+' ('+hotkeys['info_width_input']+')',info_width_input),
-  (u'velocity up'+' ('+hotkeys['velocity_up']+')',velocity_up),
-  (u'velocity down'+' ('+hotkeys['velocity_down']+')',velocity_down))),
+  (u'info width',info_width_input),
+  (u'increase velocity'+' ('+hotkeys['velocity_inc']+')',velocity_inc),
+  (u'decrease velocity'+' ('+hotkeys['velocity_dec']+')',velocity_dec))),
  (u'?',(
   (t('Довiдка'),help_u),
   (t('Справка'),help_r),
