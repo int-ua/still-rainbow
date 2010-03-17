@@ -11,14 +11,13 @@ Exit from help page on right button click.<br>
 Minor help corrections.<br>
 Showing an error if modules import fail.
 = v0.95 =
-Added pause to all loops, help translations.<br>
-
+Added pause to all loops. Translated help.<br>
 Changed almost all hotkeys.<br>
 
 From now on scenario format is uniform csv file with next fields:<br>
 _velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds_<br>
 
-All except wait interval are supposed to be nonnegative integers. However, there is much silent autocorrection of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.<br>
+All except wait interval are supposed to be nonnegative integers. However, there is much silent auto-correction of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.<br>
 
 The most readable line(s) will be:<br>
 00,15,22,000,090,255,1.5<br>
@@ -35,4 +34,4 @@ Next line:<br>
 0,0,0,255,255,255,0<br>
 will result in using current velocity for all channels.<br>
 
-To disable reading certain line, just coment it out with "#", leave blank or write less then 13 characters in it.
+To disable reading certain line, just comment it out with "#", leave blank or write less then 13 characters in it.
