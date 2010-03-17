@@ -1,8 +1,5 @@
 #labels Featured,Phase-Design
-#all release notes
-
 = v0.96 =
-
 Moved scenarios to private folder:
 !:\private\e6c858ac\csv\
 And added functions for importing, exporting and deleting them.
@@ -13,58 +10,29 @@ Added hotkeys map as png image, available in menu and located at
 Exit from help page on right button click.
 Minor help corrections.
 Showing an error if modules import fail.
-
-Hint: you can report any issues here:
-http://code.google.com/p/still-rainbow/issues
-
 = v0.95 =
-
 Added pause to all loops, help translations.
 
 Changed almost all hotkeys.
 
-
-
 From now on scenario format is uniform csv file with next fields:
-
 velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds
-
-
 
 All except wait interval are supposed to be nonnegative integers. However, there is much silent autocorrection of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.
 
-
-
 The most readable line(s) will be:
-
 00,15,22,000,090,255,1.5
-
-
-
 the most compact:
-
 0,15,22,0,90,255,1.5
-
-
-
 next line (added tabs to ease comparison):
-
--999,	0,	999,		-255,	285,		0,	3.1415
-
+-999,	0,	999,	-255,	285,	0,	3.1415
 will affect as:
-
-255,		0*,	255,		0,		255,		0,	3.1
-
-
+255,	0*,	255,	0,	255,	0,	3.1
 
 *If color not equals target, but velocity is 0 current velocity is used instead. And it's not a bug, it's a feature.
 
 Next line:
-
 0,0,0,255,255,255,0
-
 will result in using current velocity for all channels.
-
-
 
 To disable reading certain line, just coment it out with "#", leave blank or write less then 13 characters in it.
