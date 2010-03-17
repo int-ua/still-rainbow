@@ -1,38 +1,38 @@
 #labels Featured,Phase-Design
 = v0.96 =
-Moved scenarios to private folder:
-!:\private\e6c858ac\csv\
-And added functions for importing, exporting and deleting them.
+Moved scenarios to private folder:<br>
+!:\private\e6c858ac\csv\<br>
+And added functions for importing, exporting and deleting them.<br>
 
 Added hotkeys map as png image, available in menu and located at
-!:\private\e6c858ac\hotkeys.png
+!:\private\e6c858ac\hotkeys.png<br>
 
-Exit from help page on right button click.
-Minor help corrections.
+Exit from help page on right button click.<br>
+Minor help corrections.<br>
 Showing an error if modules import fail.
 = v0.95 =
-Added pause to all loops, help translations.
+Added pause to all loops, help translations.<br>
 
-Changed almost all hotkeys.
+Changed almost all hotkeys.<br>
 
-From now on scenario format is uniform csv file with next fields:
-velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds
+From now on scenario format is uniform csv file with next fields:<br>
+velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds<br>
 
-All except wait interval are supposed to be nonnegative integers. However, there is much silent autocorrection of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.
+All except wait interval are supposed to be nonnegative integers. However, there is much silent autocorrection of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.<br>
 
-The most readable line(s) will be:
-00,15,22,000,090,255,1.5
-the most compact:
-0,15,22,0,90,255,1.5
-next line (added tabs to ease comparison):
--999,	0,	999,	-255,	285,	0,	3.1415
-will affect as:
-255,	0*,	255,	0,	255,	0,	3.1
+The most readable line(s) will be:<br>
+00,15,22,000,090,255,1.5<br>
+the most compact:<br>
+0,15,22,0,90,255,1.5<br>
+next line:<br>
+-999,	0,	999,	-255,	285,	0,	3.1415<br>
+will affect as:<br>
+255,	0*,	255,	0,	255,	0,	3.1<br>
 
-*If color not equals target, but velocity is 0 current velocity is used instead. And it's not a bug, it's a feature.
+*If color not equals target, but velocity is 0 current velocity is used instead. And it's not a bug, it's a feature.<br>
 
-Next line:
-0,0,0,255,255,255,0
-will result in using current velocity for all channels.
+Next line:<br>
+0,0,0,255,255,255,0<br>
+will result in using current velocity for all channels.<br>
 
 To disable reading certain line, just coment it out with "#", leave blank or write less then 13 characters in it.
