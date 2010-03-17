@@ -1,11 +1,11 @@
 #labels Featured,Phase-Design
 = v0.96 =
 Moved scenarios to private folder:<br>
-!:\private\e6c858ac\csv\<br>
+_!:\private\e6c858ac\csv\_<br>
 And added functions for importing, exporting and deleting them.<br>
 
 Added hotkeys map as png image, available in menu and located at
-!:\private\e6c858ac\hotkeys.png<br>
+_!:\private\e6c858ac\hotkeys.png_<br>
 
 Exit from help page on right button click.<br>
 Minor help corrections.<br>
@@ -16,7 +16,7 @@ Added pause to all loops, help translations.<br>
 Changed almost all hotkeys.<br>
 
 From now on scenario format is uniform csv file with next fields:<br>
-velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds<br>
+_velocity_red,velocity_green,velocity_blue,target_red,target_green,target_blue,wait_n_seconds_<br>
 
 All except wait interval are supposed to be nonnegative integers. However, there is much silent autocorrection of logic errors, so the only strict rule is that they can be read as integers. Seconds can be float values (rounded to nearest tenths during read) or integers.<br>
 
@@ -27,9 +27,9 @@ the most compact:<br>
 next line:<br>
 -999,	0,	999,	-255,	285,	0,	3.1415<br>
 will affect as:<br>
-255,	0*,	255,	0,	255,	0,	3.1<br>
+255,	0^1^,	255,	0,	255,	0,	3.1<br>
 
-*If color not equals target, but velocity is 0 current velocity is used instead. And it's not a bug, it's a feature.<br>
+^1^If color not equals target, but velocity is 0 current velocity is used instead. And it's not a bug, it's a feature.<br>
 
 Next line:<br>
 0,0,0,255,255,255,0<br>
