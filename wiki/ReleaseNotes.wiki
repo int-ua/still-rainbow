@@ -4,7 +4,7 @@ Moved scenarios to private folder:<br>
 _!:\private\e6c858ac\csv\_<br>
 And added functions for importing, exporting and deleting them.<br>
 
-Added hotkeys map as png image, available in menu and located at
+Added hotkeys map as png image, available in menu and located at<br>
 _!:\private\e6c858ac\hotkeys.png_<br>
 
 Exit from help page on right button click.<br>
